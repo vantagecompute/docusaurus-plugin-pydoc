@@ -1,0 +1,122 @@
+# @vantagecompute/docusaurus-plugin-pydoc
+
+Docusaurus plugin that generates an SDK reference from Python docstrings.
+
+The Python counterpart to
+[`@vantagecompute/docusaurus-plugin-godoc`](https://github.com/vantagecompute/docusaurus-plugin-godoc),
+with the same option shape and the same page furniture, so a reader moving between a Go
+spoke and a Python spoke on `docs.vantagecompute.ai` sees the same thing in the same
+places.
+
+## It parses, it does not import
+
+Most Python autodoc tooling imports the module it documents. This does not, and that is
+the main design decision in the package:
+
+- **Importing runs the module.** A docs build that imports the project inherits every
+  import-time side effect that project has, and a project that reads configuration at
+  import time cannot be documented at all without supplying that configuration.
+- **Importing needs the dependency tree installed** and importable in whatever
+  interpreter the docs build uses. Parsing needs only the source, so the plugin runs
+  under any modern `python3` rather than the project's own virtualenv.
+- **An import failure is hard to attribute.** A parse failure is local to one file and
+  names that file.
+
+The cost is that anything only knowable at runtime is invisible: attributes attached
+dynamically, values computed by decorators, members inherited from a base class in
+another module. For documenting hand-written docstrings, that trade is worth taking.
+
+## Install
+
+```bash
+yarn add -D @vantagecompute/docusaurus-plugin-pydoc
+```
+
+The introspector runs under `python3` from `PATH`. It uses only the standard library.
+
+## Use
+
+```ts
+// docusaurus.config.ts
+import * as path from 'path';
+
+plugins: [
+  [
+    '@vantagecompute/docusaurus-plugin-pydoc',
+    {
+      projectRoot: path.join(__dirname, '..'),
+      modules: [
+        {module: 'myproject.app', label: 'app'},
+        {module: 'myproject.auth', label: 'auth'},
+      ],
+      outputDir: './docs/sdk-reference',
+    },
+  ],
+],
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `projectRoot` | required | Project root, relative to the Docusaurus site directory. Both a `src/` layout and a package at the root are found without configuration. |
+| `modules` | `[]` | Dotted module names to document. A bare string works; `{module, label}` sets the display name. |
+| `outputDir` | `./docs/sdk-reference` | Where pages are written. One page per module, plus `index.md`. |
+| `python` | `python3` | Interpreter used to run the introspector. It never imports your project, so this need not be your virtualenv. |
+| `strict` | `true` | Fail the build on an introspection failure. See below. |
+
+## Failing loudly is the default
+
+`strict: true` means an introspection failure fails the build, and a run in which every
+requested module documented zero classes and zero functions also fails the build. That
+second check exists because the usual cause is a wrong `projectRoot` or a `src/` layout
+mismatch, not genuinely empty modules.
+
+This is a deliberate difference from the Go sibling, which warns and continues on a
+per-package failure. That behaviour means a missing toolchain or a bad credential
+produces a green build that publishes a reference with nothing in it, and every consuming
+repository has to add its own verification step to notice. Failing the build is the
+behaviour that needs no workaround downstream.
+
+Set `strict: false` if you want warn-and-continue anyway.
+
+## What appears in the output
+
+Per module: the module docstring as an Overview, public upper-case module constants,
+public classes with their bases, decorators, annotated attributes and public methods, and
+public module-level functions. Signatures are rendered from source, so annotations,
+defaults, positional-only and keyword-only markers, `*args` and `**kwargs` all survive.
+
+A name starting with an underscore is private and skipped, except for the dunders worth
+documenting when they carry a docstring: `__init__`, `__call__`, and the sync and async
+context-manager pairs.
+
+Docstrings are emitted verbatim. They are prose written by the same people who wrote the
+code, and reflowing them here would mangle the indented blocks, tables and
+reStructuredText roles many of them contain.
+
+## Standalone use
+
+Without a Docusaurus build:
+
+```bash
+node node_modules/@vantagecompute/docusaurus-plugin-pydoc/src/generate.js \
+  --project-root .. \
+  --output-dir ./docs/sdk-reference \
+  --modules myproject.app,myproject.auth
+```
+
+Or the introspector alone, which prints JSON and is the thing to reach for when the
+rendered output looks wrong and you want to see what was actually extracted:
+
+```bash
+python3 node_modules/@vantagecompute/docusaurus-plugin-pydoc/src/introspect.py \
+  --root .. --module myproject.app
+```
+
+## Releasing
+
+`just release 0.1.1` bumps, tags, pushes and creates the GitHub release; the
+`publish.yml` workflow publishes to npm with provenance on release.
+
+## License
+
+MIT

@@ -1,0 +1,29 @@
+{
+  "name": "@vantagecompute/docusaurus-plugin-pydoc",
+  "version": "0.1.0",
+  "description": "Docusaurus plugin that auto-generates SDK reference docs from Python docstrings, by parsing source rather than importing it",
+  "main": "src/index.js",
+  "files": [
+    "src/"
+  ],
+  "keywords": [
+    "docusaurus",
+    "docusaurus-plugin",
+    "python",
+    "pydoc",
+    "autodoc",
+    "documentation",
+    "sdk-reference"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vantagecompute/docusaurus-plugin-pydoc.git"
+  },
+  "peerDependencies": {
+    "@docusaurus/core": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}
