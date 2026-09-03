@@ -37,7 +37,9 @@ release version:
     git push && git push origin "v{{version}}"
     echo "Creating GitHub release v{{version}}..."
     gh release create "v{{version}}" --title "v{{version}}" --generate-notes
-    echo "Release v{{version}} created - npm publish will run via GitHub Actions."
+    echo "Release v{{version}} created."
+    echo "Consumers install this as a git dependency on the tag, so nothing is"
+    echo "published to npm. Run the publish workflow by hand if npm is wanted."
 
 # Show available commands
 [group("dev")]

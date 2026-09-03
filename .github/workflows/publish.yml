@@ -1,8 +1,12 @@
 name: Publish to npm
 
+# Manual only. Consumers currently install this package as a git dependency on a
+# tag rather than from npm, so a release does not need to publish anything, and
+# firing this on `release: published` without an NPM_TOKEN in this repository
+# would only produce a red run on every tag. Set NPM_TOKEN and run this by hand
+# when npm distribution is wanted, or restore the release trigger then.
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read

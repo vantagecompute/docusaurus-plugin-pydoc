@@ -28,8 +28,19 @@ another module. For documenting hand-written docstrings, that trade is worth tak
 
 ## Install
 
+This package is distributed as a git dependency on a tag, not from npm:
+
 ```bash
-yarn add -D @vantagecompute/docusaurus-plugin-pydoc
+yarn add -D "@vantagecompute/docusaurus-plugin-pydoc@git+ssh://git@github.com/vantagecompute/docusaurus-plugin-pydoc.git#v0.1.0"
+```
+
+There is no build step, so a git clone is directly usable and no `prepare` script is
+needed. On a CI runner without an SSH key, rewrite the transport rather than provisioning
+a key, since this repository is public:
+
+```bash
+git config --global url."https://github.com/".insteadOf "git@github.com:"
+git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
 ```
 
 The introspector runs under `python3` from `PATH`. It uses only the standard library.
@@ -114,8 +125,12 @@ python3 node_modules/@vantagecompute/docusaurus-plugin-pydoc/src/introspect.py \
 
 ## Releasing
 
-`just release 0.1.1` bumps, tags, pushes and creates the GitHub release; the
-`publish.yml` workflow publishes to npm with provenance on release.
+`just release 0.1.1` bumps, tags, pushes and creates the GitHub release. Consumers pin
+that tag, so nothing is published to npm and the release itself is the distribution.
+
+`publish.yml` still exists for npm distribution and is manual only. Firing it needs an
+`NPM_TOKEN` secret in this repository; without one it would fail on every tag, which is
+why it no longer runs on release.
 
 ## License
 
