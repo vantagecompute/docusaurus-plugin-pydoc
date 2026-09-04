@@ -1,6 +1,6 @@
 {
   "name": "@vantagecompute/docusaurus-plugin-pydoc",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Docusaurus plugin that auto-generates SDK reference docs from Python docstrings, by parsing source rather than importing it",
   "main": "src/index.js",
   "scripts": {
