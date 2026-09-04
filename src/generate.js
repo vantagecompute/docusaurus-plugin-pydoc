@@ -4,7 +4,7 @@
  *
  * Usage:
  *   node src/generate.js --project-root .. --output-dir ./docs/sdk-reference \
- *     --modules slurm_mcp.app,slurm_mcp.auth
+ *     --modules slurm_mcp.app,slurm_mcp.auth --label slurm_mcp --position 1
  */
 const path = require('path');
 const {generateDocs} = require('./generator');
@@ -29,10 +29,18 @@ async function main() {
     process.exit(2);
   }
 
+  const position = args.position === undefined ? undefined : Number(args.position);
+  if (position !== undefined && !Number.isFinite(position)) {
+    console.error('generate.js: --position must be a number');
+    process.exit(2);
+  }
+
   await generateDocs({
     projectRoot,
     modules,
     outputDir,
+    label: args.label,
+    position,
     python: args.python || 'python3',
     strict: args.strict !== 'false',
   });
