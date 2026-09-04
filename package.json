@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Docusaurus plugin that auto-generates SDK reference docs from Python docstrings, by parsing source rather than importing it",
   "main": "src/index.js",
+  "scripts": {
+    "test": "node --test test/renderer.test.js"
+  },
   "files": [
     "src/"
   ],
