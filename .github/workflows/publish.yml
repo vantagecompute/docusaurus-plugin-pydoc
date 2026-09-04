@@ -1,11 +1,15 @@
 name: Publish to npm
 
-# Manual only. Consumers currently install this package as a git dependency on a
-# tag rather than from npm, so a release does not need to publish anything, and
-# firing this on `release: published` without an NPM_TOKEN in this repository
-# would only produce a red run on every tag. Set NPM_TOKEN and run this by hand
-# when npm distribution is wanted, or restore the release trigger then.
+# npm is the distribution, so a release publishes one. `workflow_dispatch` stays
+# for the case a release was cut before the secret existed, or a publish needs
+# retrying against a tag that is already out.
+#
+# `NPM_TOKEN` must be a token with publish rights on the @vantagecompute scope.
+# Without it the run fails loudly on the tag, which is the right failure: a
+# release that silently did not publish is worse than a red run.
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:

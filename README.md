@@ -28,20 +28,25 @@ another module. For documenting hand-written docstrings, that trade is worth tak
 
 ## Install
 
-This package is distributed as a git dependency on a tag, not from npm:
-
 ```bash
-yarn add -D "@vantagecompute/docusaurus-plugin-pydoc@git+ssh://git@github.com/vantagecompute/docusaurus-plugin-pydoc.git#v0.1.0"
+yarn add -D @vantagecompute/docusaurus-plugin-pydoc
 ```
 
-There is no build step, so a git clone is directly usable and no `prepare` script is
-needed. On a CI runner without an SSH key, rewrite the transport rather than provisioning
-a key, since this repository is public:
+Published to npm from a tag by `publish.yml`, with
+[provenance](https://docs.npmjs.com/generating-provenance-statements): every release is
+signed with the workflow and commit it was built from, so a consumer can check that the
+tarball came from this repository rather than from someone with a token.
+
+A git dependency on a tag still works and needs no build step, since there is nothing to
+compile and no `prepare` script:
 
 ```bash
-git config --global url."https://github.com/".insteadOf "git@github.com:"
-git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+yarn add -D "@vantagecompute/docusaurus-plugin-pydoc@git+https://github.com/vantagecompute/docusaurus-plugin-pydoc.git#v0.1.1"
 ```
+
+Reach for that when you need an unreleased commit. Prefer npm otherwise: it is the version
+with provenance attached, and a git dependency over SSH needs a key on every CI runner
+that installs it.
 
 The introspector runs under `python3` from `PATH`. It uses only the standard library.
 
@@ -154,12 +159,14 @@ python3 node_modules/@vantagecompute/docusaurus-plugin-pydoc/src/introspect.py \
 
 ## Releasing
 
-`just release 0.1.1` bumps, tags, pushes and creates the GitHub release. Consumers pin
-that tag, so nothing is published to npm and the release itself is the distribution.
+`just release 0.1.1` bumps, tags, pushes and creates the GitHub release. Publishing that
+release to npm is `publish.yml`, which runs on `release: published` and can also be fired
+by hand against a tag.
 
-`publish.yml` still exists for npm distribution and is manual only. Firing it needs an
-`NPM_TOKEN` secret in this repository; without one it would fail on every tag, which is
-why it no longer runs on release.
+It publishes with `--provenance`, which needs `id-token: write` on the job and a release
+built by Actions rather than from a laptop. That is the reason to keep publishing here
+rather than running `npm publish` locally: a local publish is unattested, and once one
+version in a package is unattested the guarantee is only as good as the weakest release.
 
 ## License
 
