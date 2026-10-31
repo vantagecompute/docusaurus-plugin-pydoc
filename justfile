@@ -12,7 +12,7 @@ default:
 [group("dev")]
 install:
     @echo "Installing dependencies..."
-    npm install
+    yarn install
 
 # Clean node_modules
 [group("dev")]
@@ -30,7 +30,7 @@ release version:
         exit 1
     fi
     echo "Bumping to v{{version}}..."
-    npm version "{{version}}" --no-git-tag-version
+    yarn version "{{version}}"
     git add package.json
     git commit -m "release: v{{version}}"
     git tag "v{{version}}"

@@ -165,7 +165,7 @@ by hand against a tag.
 
 It publishes with `--provenance`, which needs `id-token: write` on the job and a release
 built by Actions rather than from a laptop. That is the reason to keep publishing here
-rather than running `npm publish` locally: a local publish is unattested, and once one
+rather than running `yarn npm publish` locally: a local publish is unattested, and once one
 version in a package is unattested the guarantee is only as good as the weakest release.
 
 ## License

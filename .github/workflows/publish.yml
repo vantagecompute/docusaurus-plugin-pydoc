@@ -1,12 +1,8 @@
 name: Publish to npm
 
 # npm is the distribution, so a release publishes one. `workflow_dispatch` stays
-# for the case a release was cut before the secret existed, or a publish needs
-# retrying against a tag that is already out.
-#
-# `NPM_TOKEN` must be a token with publish rights on the @vantagecompute scope.
-# Without it the run fails loudly on the tag, which is the right failure: a
-# release that silently did not publish is worse than a red run.
+# for the case a release was cut before publishing was set up, or a publish
+# needs retrying against a tag that is already out.
 on:
   release:
     types: [published]
@@ -19,17 +15,29 @@ permissions:
 jobs:
   publish:
     runs-on: ${{ vars.USE_SELF_HOSTED_RUNNERS == 'true' && fromJSON(vars.SELF_HOSTED_RUNS_ON || '{"group":"vantage-eng","labels":["X64"]}') || 'ubuntu-26.04' }}
+
+    # npm trusted publishing: `yarn npm publish` exchanges this job's GitHub
+    # OIDC token (id-token: write, above) for a short-lived publish credential,
+    # against the trusted publisher configured for this repository and this
+    # workflow file on npmjs.com. Yarn 4 does the exchange itself, so there is
+    # no npm CLI to install or pin, and no long-lived NPM_TOKEN.
+    #
+    # There is deliberately no `registry-url` on setup-node. It writes an .npmrc
+    # holding the literal `${NODE_AUTH_TOKEN}`, which nothing here needs: Yarn
+    # publishes to registry.npmjs.org by default.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org
-          package-manager-cache: ${{ runner.environment == 'github-hosted' }}
+          node-version: 26
+          package-manager-cache: false
+
+      - name: Set up Yarn (pinned by packageManager, checksum-verified)
+        uses: ./.github/actions/setup-yarn
+
+      - run: yarn install --immutable
 
       # npm accepts provenance only from GitHub-hosted runners, so this job
       # needs USE_SELF_HOSTED_RUNNERS unset (as it is on this public repository).
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: yarn npm publish --provenance --access public
